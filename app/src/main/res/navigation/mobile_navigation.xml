@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_survey">
+
+    <fragment
+        android:id="@+id/navigation_survey"
+        android:name="com.example.ezsurvey.ui.survey.SurveyFragment"
+        android:label="Survey"
+        tools:layout="@layout/fragment_survey" />
+
+    <fragment
+        android:id="@+id/navigation_results"
+        android:name="com.example.ezsurvey.ui.results.ResultsFragment"
+        android:label="Results"
+        tools:layout="@layout/fragment_results" />
+
+    <fragment
+        android:id="@+id/navigation_statistcs"
+        android:name="com.example.ezsurvey.ui.statistics.StatisticsFragment"
+        android:label="Statistics"
+        tools:layout="@layout/fragment_statistics" />
+</navigation>

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "369987602882",
+    "firebase_url": "https://ez-survey.firebaseio.com",
+    "project_id": "ez-survey",
+    "storage_bucket": "ez-survey.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:369987602882:android:99beab488649d862ec2e5b",
+        "android_client_info": {
+          "package_name": "com.example.ezsurvey"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "369987602882-a1q0m88smv55ggs5mhhasv74dj2vqrbl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYo3pe8hb2o8i0B0Z6S4AnztVa4rA7X90"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "369987602882-a1q0m88smv55ggs5mhhasv74dj2vqrbl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
