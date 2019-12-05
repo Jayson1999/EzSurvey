@@ -52,12 +52,6 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // remove title
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//        ActionBar actionBar = getSupportActionBar();
-//        actionBar.setDisplayShowHomeEnabled(true);
-//        actionBar.setIcon(R.drawable.logo);
         setContentView(R.layout.activity_home);
 
         formCL = (ConstraintLayout)findViewById(R.id.formCL);
@@ -70,8 +64,10 @@ public class HomeActivity extends AppCompatActivity {
         forms  = new ArrayList<>();
         formAdapter = new FormAdapter(this,forms);
         add = (FloatingActionButton)findViewById(R.id.btn_add);
+        //Insert loading GIF with Glide
         Glide.with(HomeActivity.this).load(R.drawable.loading).apply(new RequestOptions().override(400)).into(loading);
 
+        //load Forms available from Firebase
         db.collection("Forms").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -89,6 +85,7 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
+        //Add New Form on click
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -96,6 +93,7 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
+        //Grid View on click
         formGV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -106,6 +104,7 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+    //on app restart which is coming back from back stacks refresh the page for latest updates
     @Override
     protected void onRestart() {
         super.onRestart();

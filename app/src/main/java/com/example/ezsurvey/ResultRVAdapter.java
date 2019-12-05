@@ -68,6 +68,7 @@ public class ResultRVAdapter extends RecyclerView.Adapter<ResultRVAdapter.ViewHo
             public void onClick(View v) {
                 holder.resDate.setTextColor(Color.parseColor("#FCB50E"));
                 holder.RVCL.setBackgroundColor(Color.WHITE);
+                //Insert Response date as Extra to be retrieved by Result for the reading from Firebase
                 Intent i = new Intent(holder.itemView.getContext(),Result.class);
                 i.putExtra("RESPONSE",result.getDate());
                 holder.itemView.getContext().startActivity(i);

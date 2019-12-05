@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //Remove notification bar
+        //Remove notification bar and set to FULL SCREEN
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
@@ -44,8 +44,6 @@ public class MainActivity extends AppCompatActivity {
         Animation hyperspaceJump = AnimationUtils.loadAnimation(MainActivity.this, R.anim.zoom);
         //Conduct animation
         splashTxt.startAnimation(hyperspaceJump);
-       // splashLoad.startAnimation(hyperspaceJump);
-
 
         //Provide short delay of time based on SPLASH_TIME_OUT value before Navigating to Main Page
         new Handler().postDelayed(new Runnable() {

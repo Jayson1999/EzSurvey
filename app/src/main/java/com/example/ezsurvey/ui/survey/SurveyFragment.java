@@ -78,29 +78,32 @@ public class SurveyFragment extends Fragment {
         surveyViewModel =
                 ViewModelProviders.of(this).get(SurveyViewModel.class);
         final View root = inflater.inflate(R.layout.fragment_survey, container, false);
+
         final TextView formTitle = root.findViewById(R.id.formTitle);
         questionsLL = root.findViewById(R.id.questionsLL);
         loading = root.findViewById(R.id.loadingTV);
         TVloading = root.findViewById(R.id.loading);
         submit = root.findViewById(R.id.btn_submit);
 
-        Glide.with(getContext()).load(R.drawable.loading).apply(new RequestOptions().override(400)).into(loading);
+        Glide.with(getContext()).load(R.drawable.loading).apply(new RequestOptions().override(400)).into(loading);  //Insert loading GIF with Glide
         Intent intent = getActivity().getIntent();
-        selectedForm = intent.getStringExtra(HomeActivity.SELECTED_FORM);
+        selectedForm = intent.getStringExtra(HomeActivity.SELECTED_FORM);   //get Selected Form name via Intent Extra
         db = FirebaseFirestore.getInstance();
 
         formTitle.setText(selectedForm);
-        loadQuestions();
+        loadQuestions();    //load questions from database
         replies = new ArrayList<>();
         filterList = new ArrayList<>();
-        fillFilterList();
+        fillFilterList();      //load a set list of vulgar words into local arrayList
 
+        //submit button on click
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Map<String, Object> formReplies = new HashMap<>();
+                //loop through to differentiate and store replies of common question and EditText question in a list because of different attributes
                 for (int i = 0; i<questionCounter; i++){
-                    if(root.findViewWithTag("respC"+i)!=null) {
+                    if(root.findViewWithTag("respC"+i)!=null) {     //ViewWithTag C indicates common question
                         RadioGroup rg = ((RadioGroup) root.findViewWithTag("respC" + i));
                         if (rg.getCheckedRadioButtonId() != -1) {
                             int id = rg.getCheckedRadioButtonId();
@@ -110,21 +113,24 @@ public class SurveyFragment extends Fragment {
                             replies.add(new Question(((TextView) root.findViewWithTag("name" + i)).getText().toString(), "common", radioResp,""));
                         }
                     }
-                    else if(root.findViewWithTag("respE"+i)!=null){
+                    else if(root.findViewWithTag("respE"+i)!=null){     //ViewWithTag E indicates EditText question
                         replies.add(new Question(((TextView) root.findViewWithTag("name"+i)).getText().toString(),"field",((EditText)root.findViewWithTag("respE"+i)).getText().toString(),""));
                     }
                 }
+                //loop through again to check for stored list for validations before uploading to Firebase
                 for(int j = 0; j<replies.size(); j++){
-                    if(replies.get(j).getReply().length()>0 && !(replies.get(j).getReply().equals("0"))){
+                    if(replies.get(j).getReply().length()>0 && !(replies.get(j).getReply().equals("0"))){   //if fields are not field or radio not selected
+                        //For loop to loop through filter list to check for vulgar words and replace with ****
                         for(int k = 0; k<filterList.size(); k++){
                             if(replies.get(j).getReply().toLowerCase().contains(filterList.get(k))){
                                 replies.set(j,new Question(((TextView) root.findViewWithTag("name"+j)).getText().toString(),"field",replies.get(j).getReply().replaceAll(filterList.get(k),"****"),""));
                             }
                         }
+                        //insert stored list items into HashMap for Firebase insertion
                         formReplies.put("question"+j, replies.get(j).getName());
                         formReplies.put("resp"+j, replies.get(j).getReply());
                         formReplies.put("type"+j, replies.get(j).getType());
-                        if(j==replies.size()-1){
+                        if(j==replies.size()-1){    //on the last loop only add to prevent unnecessary write loopings
                             formReplies.put("formName",selectedForm);
                             formReplies.put("noOfQuestions",(formReplies.size()-1)/3 );
                         }
@@ -136,7 +142,9 @@ public class SurveyFragment extends Fragment {
                         break;
                     }
                 }
+                //conduct Writes to Firebase
                 if(!(formReplies.isEmpty())) {
+                    //upload reply with current date as document name for specification purpose
                     db.collection("Responses").document(Calendar.getInstance().getTime().toString())
                             .set(formReplies)
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -161,14 +169,19 @@ public class SurveyFragment extends Fragment {
         return root;
     }
 
+    /**
+     * Function to load questions from Firebase and display in UI format on Fragment screen
+     */
    public void loadQuestions(){
         db.collection("Forms").document(selectedForm).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(task.isSuccessful()){
+                if(task.isSuccessful()){    //get total number of questions for looping purpose
                    questionCounter = task.getResult().getLong("noOfQuestions");
                 }
+                //For loop to loop and add questions views programmatically based on how many questions
                 for(int i = 0;i<questionCounter;i++){
+                    //Question TextView
                     TextView question = new TextView(getContext());
                     question.setTag("name"+i);
                     LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -177,6 +190,8 @@ public class SurveyFragment extends Fragment {
                     question.setLayoutParams(params);
                     question.setText(i+1+"."+task.getResult().getString("question"+i));
                     questionsLL.addView(question);
+
+                    //For common type questions
                     if(task.getResult().getString("type"+i).equals("common")){
                         final LinearLayout respLL = new LinearLayout(getContext());
                         respLL.setOrientation(LinearLayout.HORIZONTAL);
@@ -186,6 +201,7 @@ public class SurveyFragment extends Fragment {
                         respLL.setGravity(Gravity.CENTER);
                         questionsLL.addView(respLL);
 
+                        //Radio group
                         final RadioGroup respGroup = new RadioGroup(getContext());
                         respGroup.setTag("respC"+i);
                         RadioGroup.LayoutParams params6 = new RadioGroup.LayoutParams(new RadioGroup.LayoutParams(RadioGroup.LayoutParams.MATCH_PARENT, RadioGroup.LayoutParams.WRAP_CONTENT));
@@ -194,6 +210,7 @@ public class SurveyFragment extends Fragment {
                         respGroup.setGravity(Gravity.CENTER);
                         respLL.addView(respGroup);
 
+                        //Radio 1
                         final RadioButton resp1 = new RadioButton(getContext());
                         LinearLayout.LayoutParams params3 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                         params3.setMargins(0,0,30,0);
@@ -203,6 +220,7 @@ public class SurveyFragment extends Fragment {
                         resp1.setBackgroundResource(R.drawable.saddest);
                         respGroup.addView(resp1);
 
+                        //Radio 2
                         final RadioButton resp2 = new RadioButton(getContext());
                         resp2.setLayoutParams(params3);
                         resp2.setGravity(Gravity.CENTER);
@@ -210,6 +228,7 @@ public class SurveyFragment extends Fragment {
                         resp2.setBackgroundResource(R.drawable.sad1);
                         respGroup.addView(resp2);
 
+                        //Radio 3
                         final RadioButton resp3 = new RadioButton(getContext());
                         resp3.setLayoutParams(params3);
                         resp3.setGravity(Gravity.CENTER);
@@ -217,6 +236,7 @@ public class SurveyFragment extends Fragment {
                         resp3.setBackgroundResource(R.drawable.poker2);
                         respGroup.addView(resp3);
 
+                        //Radio 4
                         final RadioButton resp4 = new RadioButton(getContext());
                         resp4.setLayoutParams(params3);
                         resp4.setGravity(Gravity.CENTER);
@@ -224,6 +244,7 @@ public class SurveyFragment extends Fragment {
                         resp4.setBackgroundResource(R.drawable.smile1);
                         respGroup.addView(resp4);
 
+                        //Radio 5
                         final RadioButton resp5 = new RadioButton(getContext());
                         resp5.setLayoutParams(params3);
                         resp5.setGravity(Gravity.CENTER);
@@ -231,6 +252,7 @@ public class SurveyFragment extends Fragment {
                         resp5.setBackgroundResource(R.drawable.smilest);
                         respGroup.addView(resp5);
 
+                        //Score View LinearLayout
                         final LinearLayout respTVLL = new LinearLayout(getContext());
                         respTVLL.setOrientation(LinearLayout.HORIZONTAL);
                         LinearLayout.LayoutParams params4 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -239,6 +261,7 @@ public class SurveyFragment extends Fragment {
                         respTVLL.setGravity(Gravity.CENTER);
                         questionsLL.addView(respTVLL);
 
+                        //Score 1
                         final TextView resp1TV = new TextView(getContext());
                         LinearLayout.LayoutParams params5 = new LinearLayout.LayoutParams(90, LinearLayout.LayoutParams.WRAP_CONTENT);
                         params5.setMargins(0,0,30,0);
@@ -247,47 +270,56 @@ public class SurveyFragment extends Fragment {
                         resp1TV.setText("1");
                         respTVLL.addView(resp1TV);
 
+                        //Score 2
                         final TextView resp2TV = new TextView(getContext());
                         resp2TV.setLayoutParams(params5);
                         resp2TV.setGravity(Gravity.CENTER);
                         resp2TV.setText("2");
                         respTVLL.addView(resp2TV);
 
+                        //Score 3
                         final TextView resp3TV = new TextView(getContext());
                         resp3TV.setLayoutParams(params5);
                         resp3TV.setGravity(Gravity.CENTER);
                         resp3TV.setText("3");
                         respTVLL.addView(resp3TV);
 
+                        //Score 4
                         final TextView resp4TV = new TextView(getContext());
                         resp4TV.setLayoutParams(params5);
                         resp4TV.setGravity(Gravity.CENTER);
                         resp4TV.setText("4");
                         respTVLL.addView(resp4TV);
 
+                        //Score 5
                         final TextView resp5TV = new TextView(getContext());
                         resp5TV.setLayoutParams(params5);
                         resp5TV.setGravity(Gravity.CENTER);
                         resp5TV.setText("5");
                         respTVLL.addView(resp5TV);
 
-                        final ColorStateList defCol = resp1TV.getTextColors();
+                        final ColorStateList defCol = resp1TV.getTextColors();  //get default TextView Color
 
+                        //Radio 1 on click
                         resp1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                             @Override
                             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                                 if(isChecked){
+                                    //set Radio 1 score to red and bigger
                                     resp1TV.setTextColor(Color.RED);
                                     resp1TV.setTextSize(18);
                                     resp1TV.setPadding(30,0,0,0);
-                                    resp1.setVisibility(View.GONE);
+                                    resp1.setVisibility(View.GONE);     //hide static image
+                                    //load and display a temporary GIF haptic feedback on radio selected
                                     final ImageView img = new ImageView(getContext());
                                     Glide.with(getContext()).load(R.drawable.loudcry).apply(new RequestOptions().override(180)).into(img);
                                     respGroup.addView(img,0);
+                                    //handler to set timer for the GIF
                                     final Handler handler = new Handler();
                                     handler.postDelayed(new Runnable() {
                                         @Override
                                         public void run() {
+                                            //when timer is UP, remove GIF and replace back with static image
                                             resp1TV.setPadding(0,0,0,0);
                                             respGroup.removeView(img);
                                             resp1.setVisibility(View.VISIBLE);
@@ -301,6 +333,7 @@ public class SurveyFragment extends Fragment {
                             }
                         });
 
+                        //Radio 2 on click, similar implementation with Radio 1 on click
                         resp2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                             @Override
                             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -329,6 +362,7 @@ public class SurveyFragment extends Fragment {
                             }
                         });
 
+                        //Radio 3 on click, similar implementation with Radio 1 on click
                         resp3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                             @Override
                             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -357,6 +391,7 @@ public class SurveyFragment extends Fragment {
                             }
                         });
 
+                        //Radio 4 on click, similar implementation with Radio 1 on click
                         resp4.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                             @Override
                             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -385,6 +420,7 @@ public class SurveyFragment extends Fragment {
                             }
                         });
 
+                        //Radio 5 on click, similar implementation with Radio 1 on click
                         resp5.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                             @Override
                             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -414,6 +450,7 @@ public class SurveyFragment extends Fragment {
                         });
 
                     }
+                    //else for EditText field questions
                     else{
                         EditText reply = new EditText(getContext());
                         reply.setTag("respE"+i);
@@ -421,7 +458,7 @@ public class SurveyFragment extends Fragment {
                         ETparams.setMargins(0,0,0,90);
                         reply.setHint("Answer here");
                         reply.setTextSize(14);
-                        reply.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+                        reply.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES); //input type for First capital letter on sentences
                         reply.setLayoutParams(ETparams);
                         questionsLL.addView(reply);
 
@@ -433,6 +470,9 @@ public class SurveyFragment extends Fragment {
         });
     }
 
+    /**
+     * Function to retrieve and fill up the vulgarity filter list from Firebase
+     */
     public void fillFilterList(){
         db.collection("Filters").document("Vulgars").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override

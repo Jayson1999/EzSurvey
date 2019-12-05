@@ -31,6 +31,7 @@ public class Result extends AppCompatActivity {
         resLL = findViewById(R.id.resLL);
         resTV = findViewById(R.id.resTV);
 
+        //Reading results responses from Firebase based on clicked Response on the specific time
         db.collection("Responses").document(getIntent().getStringExtra("RESPONSE")).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {

@@ -19,7 +19,6 @@ public class FormAdapter extends BaseAdapter {
     private final Context mContext;
     private final ArrayList<Form> forms;
 
-    //overloaded constructor passing the foods and drinks
     public FormAdapter(Context context, ArrayList<Form> forms) {
         this.mContext = context;
         this.forms = forms;
@@ -54,14 +53,19 @@ public class FormAdapter extends BaseAdapter {
         final TextView formLayoutName = (TextView)convertView.findViewById(R.id.formLTV);
         final ImageView formImg = (ImageView)convertView.findViewById(R.id.formIV);
 
-        formLayoutName.setText(form.getName());
+        formLayoutName.setText(form.getName());     //set Form Name on XML
+
+        //Setting initial as thumbnail icons for Forms with stored array XML
         Resources res = convertView.getResources();
         TypedArray icons = res.obtainTypedArray(R.array.initial);
+        //Conduct comparison search with Index and ASCII codes of initial
             for(int i = 0; i<36 ;i++){
+                //if initial is alphabet
                 if(i==((int)form.getName().charAt(0))-65){
                     Drawable drawable = icons.getDrawable(i);
                     formImg.setImageDrawable(drawable);
                 }
+                //if initial is number
                 else if(i==((int)form.getName().charAt(0))-48+26){
                     Drawable drawable = icons.getDrawable(i);
                     formImg.setImageDrawable(drawable);

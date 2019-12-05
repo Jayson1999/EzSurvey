@@ -41,12 +41,15 @@ public class StatisticsFragment extends Fragment {
         statisticsViewModel =
                 ViewModelProviders.of(this).get(StatisticsViewModel.class);
         View root = inflater.inflate(R.layout.fragment_statistics, container, false);
-        selectedForm = getActivity().getIntent().getStringExtra(HomeActivity.SELECTED_FORM);
+
+        selectedForm = getActivity().getIntent().getStringExtra(HomeActivity.SELECTED_FORM);    //get Intent Extra on Selected Form
         final TextView graphTitle = root.findViewById(R.id.graphTitle);
         graphTitle.setText(selectedForm + " Overall Statistics");
         db = FirebaseFirestore.getInstance();
         qScoreList = new ArrayList<>();
         questions = new ArrayList<>();
+
+        //First Graph View settings
         graph = (GraphView) root.findViewById(R.id.graph);
         graph.getGridLabelRenderer().setHorizontalAxisTitle("Recent Responses");
         graph.getGridLabelRenderer().setVerticalAxisTitle("Score");
@@ -58,6 +61,7 @@ public class StatisticsFragment extends Fragment {
         graph.getViewport().setMaxX(10);
         graph.getViewport().setScrollable(true);
 
+        //Second Graph View settings
         graph2 = (GraphView) root.findViewById(R.id.graph2);
         graph2.getGridLabelRenderer().setVerticalAxisTitle("Score");
         graph2.getGridLabelRenderer().setVerticalAxisTitleTextSize(15);
@@ -69,29 +73,33 @@ public class StatisticsFragment extends Fragment {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.isSuccessful()){
+                    //set DataPoint for graphs plotting value
                     DataPoint[] dp = new DataPoint[task.getResult().size()];
-                    int index = 0;
+                    int index = 0;  //index counter to track below foreach loop of QueryDocumentSnapshot for Graph 1
                     for(QueryDocumentSnapshot document:task.getResult()){
-                        int totalScorePerResp=0;
-                        int qScoreIndex = -1;
+                        int totalScorePerResp=0;    //accumulate total score per response/person for Graph 1
+                        int qScoreIndex = -1;   //question score list index to track score accumulated base on Question No.
                         for(int i = 0; i<document.getLong("noOfQuestions");i++){
+                            //if common type question with Scores
                             if(document.getString("type"+i).equals("common")){
                                 qScoreIndex++;
+                                //Adding Question string for Graph 2
                                 if(!(questions.contains("Question "+(i+1)))){
                                     questions.add("Question "+(i+1));
                                 }
-                                totalScorePerResp = totalScorePerResp + Integer.parseInt(document.getString("resp"+i));
-                                if(index==0){
+                                totalScorePerResp = totalScorePerResp + Integer.parseInt(document.getString("resp"+i)); //accumulate score per response/person for Graph 1
+                                if(index==0){   //Add into list on first loop
                                     qScoreList.add(Integer.parseInt(document.getString("resp"+i)));
                                 }
-                                else{
+                                else{   //After that, replace by adding subsequent score for Graph 2
                                     qScoreList.set(qScoreIndex,qScoreList.get(qScoreIndex)+Integer.parseInt(document.getString("resp"+i)));
                                 }
                             }
                         }
-                        dp[index]=new DataPoint(index,totalScorePerResp);
+                        dp[index]=new DataPoint(index,totalScorePerResp);   //add new datapoint for each response indicate tracking score for each response
                         index++;
                     }
+                    //Validate if there's any response
                     if(dp.length>0) {
                         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dp);
                         graph.addSeries(series);
@@ -99,13 +107,14 @@ public class StatisticsFragment extends Fragment {
                     else{
                         graph.setTitle("Not enough data collected");
                     }
-
+                    //Graph 2 Label Formatter settings
                     StaticLabelsFormatter slf = new StaticLabelsFormatter(graph2);
                     String[] questionNames = new String[questions.size()];
-                    for(int i = 0;i<questions.size();i++){
+                    for(int i = 0;i<questions.size();i++){  //Passing arrayList into Array for DataPoint usage
                         questionNames[i] = questions.get(i);
                     }
-                    if(questionNames.length>1) {
+                    //if passed arrayList is not empty
+                    if(questionNames.length>1) {    //conduct Graph 2 value and label settings
                         slf.setHorizontalLabels(questionNames);
                         graph2.getGridLabelRenderer().setLabelFormatter(slf);
                         DataPoint[] dp2 = new DataPoint[qScoreList.size()];

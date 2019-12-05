@@ -50,17 +50,20 @@ public class ResultsFragment extends Fragment {
         resultsViewModel =
                 ViewModelProviders.of(this).get(ResultsViewModel.class);
         View root = inflater.inflate(R.layout.fragment_results, container, false);
+
         final TextView resultTitle = root.findViewById(R.id.resultTitle);
         mResultRecyclerView = root.findViewById(R.id.resultRV);
         resultCL = root.findViewById(R.id.resultCL);
         loadingTv = root.findViewById(R.id.loadingTV);
         loadingImg = root.findViewById(R.id.loadingImg);
         emptyTV = root.findViewById(R.id.emptyTV);
-        Glide.with(getContext()).load(R.drawable.loading).apply(new RequestOptions().override(400)).into(loadingImg);
+
+        Glide.with(getContext()).load(R.drawable.loading).apply(new RequestOptions().override(400)).into(loadingImg);   //Insert Loading GIF with Glide
         responsesList = new ArrayList<>();
         mAdapter = new ResultRVAdapter(getActivity(),responsesList);
         linearLayoutManager= new LinearLayoutManager(getActivity());
         db = FirebaseFirestore.getInstance();
+        //Retrieved Intent Extra of which form is selected
         selectedForm = getActivity().getIntent().getStringExtra(HomeActivity.SELECTED_FORM);
         resultTitle.setText(selectedForm+" Responses");
         mResultRecyclerView.setLayoutManager(linearLayoutManager);
@@ -71,8 +74,8 @@ public class ResultsFragment extends Fragment {
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.isSuccessful()){
                     for (QueryDocumentSnapshot document : task.getResult()){
-                        int score = 0;
-                        String review = "";
+                        int score = 0;  //to accumulate total score per document/response to be shown in RV list
+                        String review = "";     //to retrieve texts entered responses
                         for(int i = 0; i<document.getLong("noOfQuestions"); i++){
                             if(document.getString("type"+i).equals("common")){
                                 score = score+Integer.parseInt(document.getString("resp"+i));
@@ -83,6 +86,7 @@ public class ResultsFragment extends Fragment {
                         }
                         responsesList.add(new Question(review,"","Score: "+score, document.getId()));
                     }
+                    //if nothing is added where indicates no responses received
                     if(responsesList.isEmpty())
                         emptyTV.setVisibility(View.VISIBLE);
                     mAdapter.notifyDataSetChanged();
