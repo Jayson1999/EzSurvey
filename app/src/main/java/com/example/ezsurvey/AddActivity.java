@@ -65,7 +65,7 @@ public class AddActivity extends AppCompatActivity {
      * Function to add new questions programmatically to UI views
      */
     public void addNewQuestion(){
-        numberingCounter++; //accumulate total number of questions
+        numberingCounter++;
         questionType = "common";    //start with a default Common type question
         final LinearLayout overallQ = new LinearLayout(AddActivity.this);
         overallQ.setOrientation(LinearLayout.VERTICAL);
@@ -80,11 +80,6 @@ public class AddActivity extends AppCompatActivity {
         params1.gravity = Gravity.CENTER;
         questionLL.setLayoutParams(params1);
         overallQ.addView(questionLL);
-
-        //numbering
-        TextView numberingTV = new TextView(AddActivity.this);
-        numberingTV.setText(numberingCounter+".");
-        questionLL.addView(numberingTV);
 
         //EditText field for user to enter question that is wanted to be asked
         final EditText txt_question = new EditText(AddActivity.this);
