@@ -1,6 +1,8 @@
 package com.example.ezsurvey.ui.statistics;
 
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -100,7 +102,7 @@ public class StatisticsFragment extends Fragment {
                         index++;
                     }
                     //Validate if there's any response
-                    if(dp.length>0) {
+                    if(dp.length>1) {
                         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dp);
                         graph.addSeries(series);
                     }
@@ -160,8 +162,12 @@ public class StatisticsFragment extends Fragment {
                             if (!emptyCheck) {
                                 //create Graph View
                                 GraphView newGraphView = new GraphView(getContext());
-                                LinearLayout.LayoutParams newParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 600);
+                                //Graph View settings
+                                DisplayMetrics displayMetrics = new DisplayMetrics();   //get screen width for layout settings
+                                getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                                LinearLayout.LayoutParams newParams = new LinearLayout.LayoutParams(displayMetrics.widthPixels-180, 600);
                                 newParams.setMargins(0, 90, 0, 0);
+                                newParams.gravity = Gravity.CENTER;
                                 newGraphView.setLayoutParams(newParams);
                                 graphLL.addView(newGraphView);
 
