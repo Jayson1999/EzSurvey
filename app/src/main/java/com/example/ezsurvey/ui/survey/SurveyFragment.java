@@ -91,6 +91,9 @@ public class SurveyFragment extends Fragment {
                             String radioResp = radioIndex+1+"";
                             replies.add(new Question(((TextView) root.findViewWithTag("name" + i)).getText().toString(), "common", radioResp,""));
                         }
+                        else{
+                            replies.add(new Question(((TextView) root.findViewWithTag("name" + i)).getText().toString(), "common", 0+"",""));
+                        }
                     }
                     else if(root.findViewWithTag("respE"+i)!=null){     //ViewWithTag E indicates EditText question
                         replies.add(new Question(((TextView) root.findViewWithTag("name"+i)).getText().toString(),"field",((EditText)root.findViewWithTag("respE"+i)).getText().toString(),""));
