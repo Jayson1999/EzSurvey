@@ -7,10 +7,13 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -21,7 +24,8 @@ public class Result extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private LinearLayout resLL;
-    private TextView resTV;
+    private TextView resTV,loadingResTV;
+    private ImageView loadingRes;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,6 +34,10 @@ public class Result extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         resLL = findViewById(R.id.resLL);
         resTV = findViewById(R.id.resTV);
+        loadingResTV = findViewById(R.id.loadingResTV);
+        loadingRes = findViewById(R.id.loadingRes);
+        //Insert loading GIF
+        Glide.with(this).load(R.drawable.loading).apply(new RequestOptions().override(400)).into(loadingRes);
 
         //Reading results responses from Firebase based on clicked Response on the specific time
         db.collection("Responses").document(getIntent().getStringExtra("RESPONSE")).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -51,7 +59,9 @@ public class Result extends AppCompatActivity {
                     resLL.addView(question);
                     resLL.addView(resp);
                 }
-
+                //Remove loading views on finish loading from Firebase
+                resLL.removeView(loadingRes);
+                resLL.removeView(loadingResTV);
             }
         });
 
