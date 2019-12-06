@@ -217,6 +217,7 @@ public class AddActivity extends AppCompatActivity {
                     }
                     overallQ.removeView(addQ);  //remove add button and will then be added again on next call
                     questionLL.removeView(chgQ);    //remove previous change button
+                    txt_question.setEnabled(false); //prevent user from making changes that will not be saved
                     addNewQuestion();   //recall the function
                 }
                 else{
