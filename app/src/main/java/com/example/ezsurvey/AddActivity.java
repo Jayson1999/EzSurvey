@@ -328,22 +328,22 @@ public class AddActivity extends AppCompatActivity {
             form.put("noOfQuestions", newForm.getQuestions().size());
             form.put("noOfResponses",newForm.getNoOfResponses());
 
-            db.collection("Forms").document(newForm.getName())
-                    .set(form)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void documentReference) {
-                            Toast.makeText(AddActivity.this,newForm.getName()+" has been successfully added!",Toast.LENGTH_SHORT).show();
-                            finish();
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(AddActivity.this,"Error adding Form"+ e,Toast.LENGTH_SHORT).show();
-                        }
-                    });
         }
+        db.collection("Forms").document(newForm.getName())
+                .set(form)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void documentReference) {
+                        Toast.makeText(AddActivity.this,newForm.getName()+" has been successfully added!",Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(AddActivity.this,"Error adding Form"+ e,Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
 }
