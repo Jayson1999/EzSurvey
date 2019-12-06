@@ -23,10 +23,23 @@
         android:layout_height="wrap_content"
         android:fontFamily="serif"
         android:gravity="center"
+        android:text="Form Name"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/formIV" />
+
+    <TextView
+        android:id="@+id/totalResp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="serif"
+        android:gravity="center"
+        android:text="Total Renponses:"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/formLTV" />
 
     <ImageView
         android:id="@+id/imageView"

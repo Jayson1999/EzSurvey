@@ -4,8 +4,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -18,7 +18,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.helper.StaticLabelsFormatter;
 import com.jjoe64.graphview.series.BarGraphSeries;
@@ -29,21 +28,21 @@ import java.util.ArrayList;
 
 public class StatisticsFragment extends Fragment {
 
-    private StatisticsViewModel statisticsViewModel;
     private String selectedForm;
     private FirebaseFirestore db;
     private ArrayList<Integer>qScoreList;
     private ArrayList<String>questions;
     private GraphView graph,graph2;
+    private LinearLayout graphLL;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        statisticsViewModel =
-                ViewModelProviders.of(this).get(StatisticsViewModel.class);
+
         View root = inflater.inflate(R.layout.fragment_statistics, container, false);
 
         selectedForm = getActivity().getIntent().getStringExtra(HomeActivity.SELECTED_FORM);    //get Intent Extra on Selected Form
         final TextView graphTitle = root.findViewById(R.id.graphTitle);
+        graphLL = (LinearLayout) root.findViewById(R.id.graphLL);
         graphTitle.setText(selectedForm + " Overall Statistics");
         db = FirebaseFirestore.getInstance();
         qScoreList = new ArrayList<>();
@@ -52,7 +51,7 @@ public class StatisticsFragment extends Fragment {
         //First Graph View settings
         graph = (GraphView) root.findViewById(R.id.graph);
         graph.getGridLabelRenderer().setHorizontalAxisTitle("Recent Responses");
-        graph.getGridLabelRenderer().setVerticalAxisTitle("Score");
+        graph.getGridLabelRenderer().setVerticalAxisTitle("Total Scores");
         graph.getGridLabelRenderer().setVerticalAxisTitleTextSize(15);
         graph.getGridLabelRenderer().setHorizontalLabelsVisible(false);
         graph.getViewport().setXAxisBoundsManual(true);
@@ -63,12 +62,13 @@ public class StatisticsFragment extends Fragment {
 
         //Second Graph View settings
         graph2 = (GraphView) root.findViewById(R.id.graph2);
-        graph2.getGridLabelRenderer().setVerticalAxisTitle("Score");
+        graph2.getGridLabelRenderer().setVerticalAxisTitle("Total Scores");
         graph2.getGridLabelRenderer().setVerticalAxisTitleTextSize(15);
         graph2.getViewport().setMaxY(60);
         graph2.getViewport().setYAxisBoundsManual(true);
         graph2.getViewport().setScrollable(true);
 
+        //Retrieving Responses data from Firebase
         db.collection("Responses").whereEqualTo("formName",selectedForm).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -127,6 +127,60 @@ public class StatisticsFragment extends Fragment {
                     }
                     else {
                         graph2.setTitle("Not enough data collected");
+                    }
+
+                    if(!(task.getResult().isEmpty())) {
+                        //Continue Creating graphs depends on how many questions exist
+                        //for each question
+                        int questionNamesCounter = 0;     //counter to track question name and show as graph title
+                        //for each question
+                        for (int questionCounter = 0; questionCounter < task.getResult().getDocuments().get(0).getLong("noOfQuestions"); questionCounter++) {
+                            int scoreArray[] = {0, 0, 0, 0, 0};     //to store counters based on 5 different scores
+                            //for each response
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                //for Common type questions
+                                if (document.getString("type" + questionCounter).equals("common")) {
+                                    //for each score
+                                    for (int scoreCounter = 1; scoreCounter <= 5; scoreCounter++) {
+                                        if (Integer.parseInt(document.getString("resp" + questionCounter)) == scoreCounter) {
+                                            scoreArray[scoreCounter - 1]++;
+                                        }
+                                    }
+                                }
+                            }
+                            //empty check to check if it's Common type question
+                            boolean emptyCheck = true;
+                            for (int checkCounter = 0; checkCounter < 5; checkCounter++) {
+                                if (scoreArray[checkCounter] != 0) {
+                                    emptyCheck = false;     //if it's not empty, it's Common type question
+                                    break;
+                                }
+                            }
+                            //Only create graphs for Common Type Questions
+                            if (!emptyCheck) {
+                                //create Graph View
+                                GraphView newGraphView = new GraphView(getContext());
+                                LinearLayout.LayoutParams newParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 600);
+                                newParams.setMargins(0, 90, 0, 0);
+                                newGraphView.setLayoutParams(newParams);
+                                graphLL.addView(newGraphView);
+
+                                //create Bar Graph series
+                                DataPoint[] newDP = new DataPoint[5];
+                                for (int dpCounter = 0; dpCounter < 5; dpCounter++) {
+                                    newDP[dpCounter] = new DataPoint(dpCounter + 1, scoreArray[dpCounter]);
+                                }
+                                BarGraphSeries<DataPoint> newGraphSeries = new BarGraphSeries<>(newDP);
+                                newGraphSeries.setSpacing(10);
+
+                                //Graph settings
+                                newGraphView.addSeries(newGraphSeries);
+                                newGraphView.setTitle(questionNames[questionNamesCounter]);     //set title with questionNames stored previously
+                                newGraphView.getGridLabelRenderer().setHorizontalAxisTitle("Score");
+
+                                questionNamesCounter++; //increment counter to proceed to next name for next graph
+                            }
+                        }
                     }
                 }
             }

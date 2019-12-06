@@ -319,13 +319,14 @@ public class AddActivity extends AppCompatActivity {
      */
     public void addToFirebase(EditText txt_question){
         questions.add(new Question(txt_question.getText().toString(),questionType,"",""));
-        newForm = new Form(formName.getText().toString(),questions);
+        newForm = new Form(formName.getText().toString(),questions,0);
         Map<String, Object> form = new HashMap<>();
         for(int i = 0 ; i < questions.size() ; i++){
 
             form.put("question"+i, newForm.getQuestions().get(i).getName());
             form.put("type"+i, newForm.getQuestions().get(i).getType());
             form.put("noOfQuestions", newForm.getQuestions().size());
+            form.put("noOfResponses",newForm.getNoOfResponses());
 
             db.collection("Forms").document(newForm.getName())
                     .set(form)

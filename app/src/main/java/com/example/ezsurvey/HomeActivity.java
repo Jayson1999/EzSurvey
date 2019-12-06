@@ -73,7 +73,7 @@ public class HomeActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.isSuccessful()){
                     for (QueryDocumentSnapshot document : task.getResult()){
-                        forms.add(new Form(document.getId(),questions));
+                        forms.add(new Form(document.getId(),questions,document.getLong("noOfResponses")));
                     }
                     if(forms.isEmpty()){
                         tv.setVisibility(View.VISIBLE);

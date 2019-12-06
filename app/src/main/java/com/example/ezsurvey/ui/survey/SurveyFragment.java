@@ -2,16 +2,10 @@ package com.example.ezsurvey.ui.survey;
 
 import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
-import android.transition.Transition;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,36 +17,24 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.target.DrawableImageViewTarget;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.example.ezsurvey.AddActivity;
 import com.example.ezsurvey.HomeActivity;
 import com.example.ezsurvey.Question;
 import com.example.ezsurvey.R;
-import com.example.ezsurvey.SurveyActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.core.Query;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -61,7 +43,6 @@ import java.util.Map;
 
 public class SurveyFragment extends Fragment {
 
-    private SurveyViewModel surveyViewModel;
     private String selectedForm;
     private FirebaseFirestore db;
     private long questionCounter=0;
@@ -75,8 +56,6 @@ public class SurveyFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        surveyViewModel =
-                ViewModelProviders.of(this).get(SurveyViewModel.class);
         final View root = inflater.inflate(R.layout.fragment_survey, container, false);
 
         final TextView formTitle = root.findViewById(R.id.formTitle);
@@ -162,6 +141,16 @@ public class SurveyFragment extends Fragment {
                                     Toast.makeText(getContext(), "Error adding Form" + e, Toast.LENGTH_SHORT).show();
                                 }
                             });
+                    //update total number of responses of the Form
+                    db.collection("Forms").document(selectedForm).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            //get latest number of responses
+                            long totalResponses = documentSnapshot.getLong("noOfResponses")+1;
+                            //update to Firebase Forms collection
+                            db.collection("Forms").document(selectedForm).update("noOfResponses",totalResponses);
+                        }
+                    });
                 }
             }
         });

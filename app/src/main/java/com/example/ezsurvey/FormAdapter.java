@@ -52,8 +52,10 @@ public class FormAdapter extends BaseAdapter {
 
         final TextView formLayoutName = (TextView)convertView.findViewById(R.id.formLTV);
         final ImageView formImg = (ImageView)convertView.findViewById(R.id.formIV);
+        final TextView totalResponses = (TextView)convertView.findViewById(R.id.totalResp);
 
         formLayoutName.setText(form.getName());     //set Form Name on XML
+        totalResponses.setText("Total Responses: "+form.getNoOfResponses()); //show total number of responses
 
         //Setting initial as thumbnail icons for Forms with stored array XML
         Resources res = convertView.getResources();
